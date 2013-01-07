@@ -1,0 +1,9 @@
+[run]
+branch = True
+
+[report]
+source =
+  django-tastypie/tastypie/*.py
+omit =
+  */migrations/*
+  */site-packages/*
