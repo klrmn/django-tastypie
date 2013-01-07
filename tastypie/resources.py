@@ -265,16 +265,7 @@ class Resource(object):
             response_class = HttpResponseNotFound
             response_code = 404
 
-        if settings.DEBUG:
-            data = {
-                "error_message": unicode(exception),
-                "traceback": the_trace,
-            }
-            desired_format = self.determine_format(request)
-            serialized = self.serialize(request, data, desired_format)
-            return response_class(content=serialized, content_type=build_content_type(desired_format))
-
-        # When DEBUG is False, send an error message to the admins (unless it's
+        # send an error message to the admins (unless it's
         # a 404, in which case we check the setting).
         send_broken_links = getattr(settings, 'SEND_BROKEN_LINK_EMAILS', False)
 
@@ -293,10 +284,17 @@ class Resource(object):
                 message = "%s\n\n%s" % (the_trace, request_repr)
                 mail_admins(subject, message, fail_silently=True)
 
-        # Prep the data going out.
-        data = {
-            "error_message": getattr(settings, 'TASTYPIE_CANNED_ERROR', "Sorry, this request could not be processed. Please try again later."),
-        }
+        # prepare the response 
+        if settings.DEBUG:  # send the trace in the response
+            data = {
+                "error_message": unicode(exception),
+                "traceback": the_trace,
+            }
+            desired_format = self.determine_format(request)
+        else:  # otherwise, use a canned error.
+            data = {
+                "error_message": getattr(settings, 'TASTYPIE_CANNED_ERROR', "Sorry, this request could not be processed. Please try again later."),
+            }
         desired_format = self.determine_format(request)
         serialized = self.serialize(request, data, desired_format)
         return response_class(content=serialized, content_type=build_content_type(desired_format))
