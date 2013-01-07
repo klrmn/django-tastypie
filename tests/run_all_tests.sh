@@ -22,6 +22,9 @@ for type in $TYPES; do
 		continue
 	elif [ $type == 'gis' ]; then
 		createdb -T template_postgis tastypie.db
+		django-admin.py test $type --settings=settings_$type
+		dropdb tastypie.db
+		continue
 	fi
 
 	django-admin.py test $type --settings=settings_$type
